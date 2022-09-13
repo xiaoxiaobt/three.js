@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<link type="text/css" rel="stylesheet" href="main.css">
+	<style>
+		body {
+			color: #000;
+		}
+
+		a {
+			color: #080;
+		}
+	</style>
+</head>
+
+<body>
+	<div id="info"><a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> css3d - sandbox</div>
+
+	<!-- Import maps polyfill -->
+	<!-- Remove this when import maps will be widely supported -->
+	<script async src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js"></script>
+	<script async src="https://unpkg.com/echarts@5.3.3/dist/echarts.js"></script>
+
+	<script type="importmap">
+			{
+				"imports": {
+					"three": "../build/three.module.js",
+					"three/addons/": "./jsm/"
+				}
+			}
+		</script>
+
+	<script type="module">
+
+		import * as THREE from 'three';
+		// import * as echarts from 'echarts';
+
+		import { TrackballControls } from 'three/addons/controls/TrackballControls.js';
+		import { CSS3DRenderer, CSS3DObject, CSS3DSprite } from 'three/addons/renderers/CSS3DRenderer.js';
+
+		let camera, scene, renderer;
+
+		let scene2, renderer2;
+
+		let controls;
+
+		init();
+		animate();
+
+		function init() {
+
+			camera = new THREE.PerspectiveCamera(); // Modified
+			camera.position.set(10, 10, 30);
+
+			scene = new THREE.Scene();
+			scene.background = new THREE.Color(0xf0f0f0);
+
+			scene2 = new THREE.Scene();
+
+			const material = new THREE.MeshBasicMaterial({ color: 0x000000, wireframe: true, wireframeLinewidth: 1, side: THREE.DoubleSide });
+
+			/** Modify starts */
+
+			for (let i = 0; i < 10; i++) {
+
+				const element = document.createElement('div');
+        		element.style.clipPath = 'circle(40%)'
+				element.style.width = '40px';
+				element.style.height = '40px';
+				const data = [
+					{ value: 800, name: 'A' },
+					{ value: 635, name: 'B' },
+					{ value: 580, name: 'C' },
+					{ value: 484, name: 'D' },
+					{ value: 300, name: 'E' },
+					{ value: 200, name: 'F' },
+				]
+				const option = {
+					series: [
+						{
+							type: 'pie',
+							id: 'distribution',
+							radius: ['30%', '80%'],
+							label: {
+								show: false,
+							},
+							universalTransition: true,
+							animationDurationUpdate: 1000,
+							data: data,
+							darkMode: true,
+						},
+					],
+				}
+				echarts.init(element, null, { renderer: 'svg' }).setOption(option)
+				element.addEventListener('wheel', (e) => {
+					e.cancelable && e.preventDefault()
+					const newEvent = new WheelEvent(e.type, e)
+					document.querySelector('canvas').dispatchEvent(newEvent)
+				})
+				const object = new CSS3DSprite(element)
+
+
+				object.position.x = Math.random() * 20 - 10;
+				object.position.y = Math.random() * 20 - 10;
+				object.position.z = 10;
+				object.rotation.x = 0;
+				object.rotation.y = 0;
+				object.rotation.z = 0;
+				object.scale.x = 0.1;
+				object.scale.y = 0.1;
+				scene2.add(object);
+			}
+
+			/** Modify ends */
+
+			renderer = new THREE.WebGLRenderer({ antialias: true });
+			renderer.setPixelRatio(window.devicePixelRatio);
+			renderer.setSize(window.innerWidth, window.innerHeight);
+			document.body.appendChild(renderer.domElement);
+
+			renderer2 = new CSS3DRenderer();
+			renderer2.setSize(window.innerWidth, window.innerHeight);
+			renderer2.domElement.style.position = 'absolute';
+			renderer2.domElement.style.top = 0;
+			document.body.appendChild(renderer2.domElement);
+
+			controls = new TrackballControls(camera, renderer2.domElement);
+
+			window.addEventListener('resize', onWindowResize);
+
+		}
+
+		function onWindowResize() {
+
+			camera.aspect = window.innerWidth / window.innerHeight;
+
+			camera.updateProjectionMatrix();
+
+			renderer.setSize(window.innerWidth, window.innerHeight);
+
+			renderer2.setSize(window.innerWidth, window.innerHeight);
+
+		}
+
+		function animate() {
+
+			requestAnimationFrame(animate);
+
+			controls.update();
+
+			renderer.render(scene, camera);
+			renderer2.render(scene2, camera);
+
+		}
+
+	</script>
+</body>
+
+</html>
